@@ -92,16 +92,16 @@ document.getElementById('fullscreen').onclick=()=>{if(!document.fullscreenElemen
  const mat=(color,rough=.65)=>new THREE.MeshStandardMaterial({color,roughness:rough});
  const skin=mat(0xd9a77f),shirt=mat(0x2878b8),pants=mat(0x26384e),shoe=mat(0x24282d),hair=mat(0x34251d);
  function part(geo,m,x,y,z){const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;character.add(o);return o}
- const torso=part(new THREE.CapsuleGeometry(.34,.62,5,10),shirt,0,1.25,0);torso.scale.set(1,1,0.78);
+ const torso=part(new THREE.CylinderGeometry(.32,.38,.72,12),shirt,0,1.25,0);torso.scale.set(1,1,0.78);
  part(new THREE.SphereGeometry(.24,18,16),skin,0,1.92,0);
  part(new THREE.SphereGeometry(.245,18,12),hair,0,2.04,-.025).scale.set(1,.55,1);
  const eyeMat=mat(0x202020);part(new THREE.SphereGeometry(.025,8,8),eyeMat,-.085,1.94,.215);part(new THREE.SphereGeometry(.025,8,8),eyeMat,.085,1.94,.215);
  const armL=new THREE.Group(),armR=new THREE.Group();character.add(armL,armR);armL.position.set(-.39,1.55,0);armR.position.set(.39,1.55,0);
  function limb(parent,geo,m,x,y,z){const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;parent.add(o);return o}
- limb(armL,new THREE.CapsuleGeometry(.105,.48,4,8),shirt,0,-.27,0);limb(armL,new THREE.SphereGeometry(.11,10,10),skin,0,-.56,0);
+ limb(armL,new THREE.CylinderGeometry(.09,.11,.48,10),shirt,0,-.27,0);limb(armL,new THREE.SphereGeometry(.11,10,10),skin,0,-.56,0);
  limb(armR,new THREE.CapsuleGeometry(.105,.48,4,8),shirt,0,-.27,0);limb(armR,new THREE.SphereGeometry(.11,10,10),skin,0,-.56,0);
  const legL=new THREE.Group(),legR=new THREE.Group();character.add(legL,legR);legL.position.set(-.17,.83,0);legR.position.set(.17,.83,0);
- for(const leg of [legL,legR]){limb(leg,new THREE.CapsuleGeometry(.13,.48,4,8),pants,0,-.27,0);limb(leg,new THREE.BoxGeometry(.2,.12,.32),shoe,0,-.57,.07)}
+ for(const leg of [legL,legR]){limb(leg,new THREE.CylinderGeometry(.12,.14,.48,10),pants,0,-.27,0);limb(leg,new THREE.BoxGeometry(.2,.12,.32),shoe,0,-.57,.07)}
  character.position.y=0;
  let joyX=0,joyY=0,walking=false,run=false;
  const base=document.getElementById('joyBase'),thumb=document.getElementById('joyThumb');let active=false,pid=null;
@@ -122,7 +122,7 @@ document.getElementById('fullscreen').onclick=()=>{if(!document.fullscreenElemen
  character.userData.vy=(character.userData.vy||0)-12*dt;character.position.y+=character.userData.vy*dt;if(character.position.y<0){character.position.y=0;character.userData.vy=0}
  camera.position.x+=(character.position.x-camera.position.x)*.06;camera.position.z+=(character.position.z+7-camera.position.z)*.06;camera.lookAt(character.position.x,1,character.position.z);
  renderer.render(scene,camera)}
- requestAnimationFrame(animate);addEventListener('resize',()=>{const w=document.getElementById('world').clientWidth,h=document.getElementById('world').clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)});
+ requestAnimationFrame(animate);addEventListener('resize',()=>{const w=Math.max(1,document.getElementById('world').clientWidth),h=Math.max(1,document.getElementById('world').clientHeight);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)});
 })();
 </script>
 </body></html>
