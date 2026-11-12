@@ -73,6 +73,50 @@ document.getElementById('fullscreen').onclick=()=>{if(!document.fullscreenElemen
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (()=> {
+const world=document.getElementById('world'),base=document.getElementById('joyBase'),thumb=document.getElementById('joyThumb');
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9acbf4);scene.fog=new THREE.Fog(0x9acbf4,55,180);
+const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,300);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputEncoding=THREE.sRGBEncoding;world.appendChild(renderer.domElement);renderer.domElement.style.zIndex='0';
+scene.add(new THREE.HemisphereLight(0xffffff,0x59616b,2));const sun=new THREE.DirectionalLight(0xfff3dc,2.2);sun.position.set(-30,60,25);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+const mat=(color,rough=.8)=>new THREE.MeshStandardMaterial({color,roughness:rough});
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(300,300),mat(0x45494d));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+// City grid streets and sidewalks
+const roadMat=mat(0x292e34),walkMat=mat(0x8b8b87),lineMat=mat(0xe8d7a0);
+function slab(w,h,d,m,x,y,z){let o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;scene.add(o);return o}
+for(let k=-4;k<=4;k++){let p=k*24;slab(10,.12,260,roadMat,p,.06,0);slab(260,.12,10,roadMat,0,.06,p);slab(2,.025,260,lineMat,p,.13,0);for(let side of [-1,1]){slab(3,.22,260,walkMat,p+side*6.5,.16,0);slab(260,.22,3,walkMat,0,.16,p+side*6.5)}}
+// building blocks, all 3D with windows, doors, roofs
+const buildingMats=[0xb9b8b2,0xc7b9a7,0x9ca9b3,0xd1c9bd,0x92999e].map(x=>mat(x));
+const glass=mat(0x263f56,.22),door=mat(0x49382c),roof=mat(0x56585b);
+function building(x,z,w,d,h,mi){let m=buildingMats[mi%buildingMats.length];slab(w,h,d,m,x,h/2,z);slab(w+.15,.25,d+.15,roof,x,h+.12,z);
+for(let yy=1;yy<h-.5;yy+=1.35){for(let xx=-w/2+.55;xx<w/2-.35;xx+=1.05){slab(.48,.62,.07,glass,x+xx,yy,z-d/2-.04);slab(.48,.62,.07,glass,x+xx,yy,z+d/2+.04)}for(let zz=-d/2+.55;zz<d/2-.35;zz+=1.05){slab(.07,.62,.48,glass,x-w/2-.04,yy,z+zz);slab(.07,.62,.48,glass,x+w/2+.04,yy,z+zz)}}
+slab(.8,1.8,.1,door,x, .9,z-d/2-.09);
+}
+// Blocks fill city with gaps and varied heights
+for(let bx=-4;bx<=4;bx++)for(let bz=-4;bz<=4;bz++){if(Math.abs(bx)<1&&Math.abs(bz)<1)continue;let x=bx*24,z=bz*24;building(x-5,z-5,7,8,5+((bx*bz+8)%4+4)%4*2,(bx+bz+20)%5);building(x+5,z+5,8,7,7+((bx+2*bz+12)%5+5)%5*2,(bx*bz+30)%5)}
+// street cobbles with modeled relief on playable block
+const stones=[0x85898d,0x73787d,0x92969a,0x686e73].map(mat);for(let z=-22;z<22;z+=.7)for(let x=-22;x<22;x+=.72){let s=new THREE.Mesh(new THREE.BoxGeometry(.65,.07,.54),stones[(Math.floor(x*3+z*7)%4+4)%4]);s.position.set(x,.05,z);s.rotation.y=(Math.random()-.5)*.06;s.receiveShadow=true;scene.add(s)}
+// third-person character
+const player=new THREE.Group();scene.add(player);const skin=mat(0xc9956e),shirt=mat(0x226bb1),pants=mat(0x26364a),black=mat(0x25282c);
+function piece(parent,g,m,x,y,z){let o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.castShadow=true;parent.add(o);return o}
+piece(player,new THREE.SphereGeometry(.24,16,16),skin,0,1.85,0);piece(player,new THREE.SphereGeometry(.245,16,12),mat(0x302019),0,1.98,-.04).scale.set(1,.5,1);piece(player,new THREE.CylinderGeometry(.3,.38,.72,12),shirt,0,1.22,0);
+const arms=[],legs=[];for(let side of [-1,1]){let a=new THREE.Group();a.position.set(side*.38,1.5,0);player.add(a);piece(a,new THREE.CylinderGeometry(.09,.11,.5,10),shirt,0,-.25,0);piece(a,new THREE.SphereGeometry(.1,10,10),skin,0,-.53,0);arms.push(a);let l=new THREE.Group();l.position.set(side*.16,.83,0);player.add(l);piece(l,new THREE.CylinderGeometry(.12,.14,.5,10),pants,0,-.25,0);piece(l,new THREE.BoxGeometry(.2,.12,.32),black,0,-.53,.07);legs.push(l)}
+let joyX=0,joyY=0,isRun=false,jumping=0,walkT=0,camYaw=0,camPitch=.22,camDist=7;
+let joyPointer=null,camPointer=null,lastX=0,lastY=0;
+function joystick(e){let r=base.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),max=r.width*.32,d=Math.hypot(dx,dy);if(d>max){dx*=max/d;dy*=max/d}thumb.style.transform='translate('+dx+'px,'+dy+'px)';joyX=dx/max;joyY=dy/max}
+function stopJoy(){joyPointer=null;joyX=joyY=0;thumb.style.transform='translate(0,0)'}
+base.addEventListener('pointerdown',e=>{e.preventDefault();joyPointer=e.pointerId;base.setPointerCapture(e.pointerId);joystick(e)});base.addEventListener('pointermove',e=>{if(e.pointerId===joyPointer)joystick(e)});base.addEventListener('pointerup',e=>{if(e.pointerId===joyPointer)stopJoy()});base.addEventListener('pointercancel',stopJoy);
+world.addEventListener('pointerdown',e=>{camPointer=e.pointerId;lastX=e.clientX;lastY=e.clientY;world.setPointerCapture(e.pointerId)});world.addEventListener('pointermove',e=>{if(e.pointerId===camPointer){camYaw-=(e.clientX-lastX)*.008;camPitch=Math.max(-.05,Math.min(.65,camPitch+(e.clientY-lastY)*.003));lastX=e.clientX;lastY=e.clientY}});function stopCam(e){if(e.pointerId===camPointer)camPointer=null}world.addEventListener('pointerup',stopCam);world.addEventListener('pointercancel',stopCam);
+const runBtn=document.getElementById('run');runBtn.addEventListener('pointerdown',e=>{e.preventDefault();isRun=true;runBtn.setPointerCapture(e.pointerId)});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>runBtn.addEventListener(ev,()=>isRun=false));
+document.getElementById('jump').onclick=()=>{if(player.position.y<=.01)jumping=5.5};
+let last=performance.now();function loop(now){requestAnimationFrame(loop);let dt=Math.min((now-last)/1000,.04);last=now;let mag=Math.hypot(joyX,joyY);
+if(mag>.1){let forward=-joyY/mag,right=joyX/mag,speed=(isRun?8:4.2)*Math.min(mag,1);let angle=camYaw;let vx=(right*Math.cos(angle)+forward*Math.sin(angle)),vz=(-right*Math.sin(angle)+forward*Math.cos(angle));player.position.x+=vx*speed*dt;player.position.z+=vz*speed*dt;player.rotation.y=Math.atan2(vx,vz);walkT+=dt*(isRun?14:9);legs[0].rotation.x=Math.sin(walkT)*.65;legs[1].rotation.x=-Math.sin(walkT)*.65;arms[0].rotation.x=-Math.sin(walkT)*.4;arms[1].rotation.x=Math.sin(walkT)*.4}else{legs.forEach(l=>l.rotation.x*=.8);arms.forEach(a=>a.rotation.x*=.8)}
+jumping-=12*dt;player.position.y=Math.max(0,player.position.y+jumping*dt);if(player.position.y===0)jumping=0;
+let tx=player.position.x+Math.sin(camYaw)*camDist, tz=player.position.z+Math.cos(camYaw)*camDist;camera.position.x+=(tx-camera.position.x)*.14;camera.position.z+=(tz-camera.position.z)*.14;camera.position.y+=(2.8+camPitch*8-camera.position.y)*.12;camera.lookAt(player.position.x,1.1+player.position.y,player.position.z);renderer.render(scene,camera)}
+requestAnimationFrame(loop);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+})();
+</script>
+<script>
+(()=> {
  const scene=new THREE.Scene(); scene.background=new THREE.Color(0x87b9e8); scene.fog=new THREE.Fog(0x87b9e8,35,110);
  const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,120);camera.position.set(0,2.5,6.5);
  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(document.getElementById('world').clientWidth,document.getElementById('world').clientHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputEncoding=THREE.sRGBEncoding;renderer.domElement.style.zIndex='1';renderer.domElement.style.opacity='0';renderer.domElement.style.background='transparent';document.getElementById('world').appendChild(renderer.domElement);
