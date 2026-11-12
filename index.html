@@ -1,10 +1,68 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gaming</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Gaming HUD</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,Helvetica,sans-serif;touch-action:none;color:#f7f8fa}
+body{background:radial-gradient(ellipse at 50% 42%,#cbd0d8 0%,#aeb5bf 62%,#929aa5 100%)}
+button{font:inherit;color:#f7f8fa;cursor:pointer;touch-action:manipulation}
+.hud{position:absolute;inset:0}
+.top-left{position:absolute;top:12px;left:12px;display:flex;align-items:flex-start;gap:20px}
+.minimap{width:clamp(95px,14vw,150px);aspect-ratio:1;border-radius:50%;border:5px solid #dfe3e8;background:linear-gradient(145deg,#e8ebef,#aab1ba);box-shadow:0 3px 7px #626a754d,inset 0 0 0 2px #727a84;position:relative;overflow:hidden}
+.map-inner{position:absolute;inset:9%;border-radius:50%;background:#d4d9df;border:1px solid #929aa4;overflow:hidden}
+.road{position:absolute;background:#edf0f3;border:1px solid #9ba3ad;transform:rotate(-35deg)}.r1{width:150%;height:20%;left:-20%;top:25%}.r2{width:20%;height:150%;left:40%;top:-20%}.r3{width:130%;height:12%;left:-10%;top:68%;transform:rotate(35deg)}
+.map-square{position:absolute;width:14%;aspect-ratio:1;background:#b9c0c8;border:1px solid #89919b}.s1{left:15%;top:25%}.s2{left:60%;top:65%}.map-dot{position:absolute;width:12%;aspect-ratio:1;border-radius:50%;background:#d84c4c;border:2px solid white;left:57%;top:34%;box-shadow:0 1px 3px #333}.player-dot{position:absolute;width:12%;aspect-ratio:1;border-radius:50%;background:#2c5948;border:2px solid #e9fff4;left:38%;top:55%}
+.map-label{position:absolute;right:4%;top:14%;font-weight:700;font-size:clamp(11px,2vw,18px);text-shadow:0 1px 2px #555;background:#59616b;padding:3px 7px;border-radius:5px}
+.money{display:flex;align-items:center;gap:10px;padding:7px 9px;border-radius:40px;background:linear-gradient(#737a84,#515862);border:2px solid #9da4ad;box-shadow:inset 0 2px 4px #ffffff55,0 3px 5px #5555;min-width:clamp(150px,24vw,260px);height:clamp(52px,9vw,78px)}
+.coin{width:clamp(40px,7vw,64px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#f7df8a 0 35%,#c69a3c 53%,#805b1d 70%,#e9c765 76%);border:3px solid #e4d2a0;color:#70521b;font-size:clamp(20px,4vw,36px);text-shadow:0 1px #fff8;box-shadow:0 2px 4px #2228}
+.amount{font-size:clamp(18px,3vw,29px);font-weight:600;flex:1}.plus{width:clamp(42px,7vw,62px);aspect-ratio:1;border-radius:50%;border:2px solid #aab1ba;background:linear-gradient(#7c838d,#555c66);font-size:clamp(30px,5vw,45px);line-height:1;box-shadow:inset 0 2px 3px #ffffff55}
+.top-actions{position:absolute;right:12px;top:12px;display:flex;gap:clamp(5px,1.2vw,14px)}
+.action{width:clamp(58px,9vw,96px);height:clamp(64px,12vw,100px);border-radius:25px;border:2px solid #9aa1ab;background:linear-gradient(145deg,#737a84,#4c535d);box-shadow:inset 0 2px 4px #ffffff55,0 3px 6px #5555;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-shadow:0 1px 2px #333;font-size:clamp(12px,2vw,20px)}
+.action .ico{font-size:clamp(24px,4vw,42px);line-height:1.1;filter:drop-shadow(0 1px 1px #222)}
+.action:active,.round-btn:active,.plus:active{transform:translateY(2px);filter:brightness(1.15)}
+.fullscreen{position:absolute;right:12px;top:clamp(90px,15vw,120px);width:clamp(62px,9vw,100px);height:clamp(62px,9vw,100px);border-radius:28px;border:2px solid #9aa1ab;background:linear-gradient(145deg,#737a84,#4c535d);box-shadow:inset 0 2px 4px #ffffff55,0 3px 6px #5555;font-size:clamp(28px,5vw,48px)}
+.right-controls{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:14px}
+.round-btn{width:clamp(82px,13vw,118px);height:clamp(82px,13vw,118px);border-radius:50%;border:3px solid #9aa1ab;background:radial-gradient(circle at 35% 25%,#8b929c,#59616b 70%);box-shadow:inset 0 3px 5px #ffffff55,0 4px 7px #5555;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:clamp(16px,2.4vw,23px);text-shadow:0 2px 2px #333}
+.round-btn .ico{font-size:clamp(34px,5vw,54px);line-height:1}
+.joy-base{position:absolute;left:clamp(28px,7vw,82px);bottom:clamp(22px,5vw,50px);width:clamp(110px,19vw,165px);height:clamp(110px,19vw,165px);border-radius:50%;background:radial-gradient(circle,#737b85 0 45%,#535b65 48%,#a1a8b1 62%,#626a74 70%,#858d97 76%);border:4px solid #929aa4;box-shadow:inset 0 3px 8px #3338,0 3px 7px #5555;display:grid;place-items:center}
+.joy-thumb{width:58%;height:58%;border-radius:50%;border:3px solid #8f969f;background:radial-gradient(circle at 35% 25%,#b8bec6,#747c86 55%,#4b535d 75%);box-shadow:inset 0 3px 7px #ffffff55,0 3px 5px #3338;display:grid;place-items:center;touch-action:none;cursor:grab}
+.joy-thumb:active{cursor:grabbing}.joy-center{width:42%;height:42%;border-radius:50%;background:conic-gradient(from 20deg,#9ea5ad,#5c646e,#aab1b9,#626a74,#9ea5ad);box-shadow:inset 0 2px 4px #3338;border:1px solid #747c86}
+.toast{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#3f4650dd;padding:14px 22px;border-radius:12px;border:1px solid #ffffff55;display:none;font-size:18px;box-shadow:0 8px 25px #2225}
+@media(max-width:600px){.top-left{gap:8px;top:8px;left:8px}.top-actions{top:8px;right:8px;gap:4px}.action{border-radius:16px}.fullscreen{right:8px}.right-controls{right:8px;bottom:10px;gap:10px}.joy-base{left:18px;bottom:20px}.money{min-width:125px}.top-actions .action{width:clamp(48px,12vw,65px);height:58px}.top-actions .ico{font-size:23px}.top-actions .action{font-size:10px}}
+</style>
 </head>
 <body>
-</body>
-</html>
+<div class="hud">
+ <div class="top-left">
+  <div class="minimap"><div class="map-inner"><div class="road r1"></div><div class="road r2"></div><div class="road r3"></div><i class="map-square s1"></i><i class="map-square s2"></i><i class="map-dot"></i><i class="player-dot"></i></div><span class="map-label">MAP</span></div>
+  <div class="money"><div class="coin">♛</div><span class="amount" id="coins">500</span><button class="plus" id="addCoins" aria-label="Add coins">+</button></div>
+ </div>
+ <div class="top-actions">
+  <button class="action" data-panel="Shop"><span class="ico">🛒</span>Shop</button>
+  <button class="action" data-panel="Inventory"><span class="ico">▦</span>Inventory</button>
+  <button class="action" data-panel="Settings"><span class="ico">⚙</span>Settings</button>
+  <button class="action" data-panel="Phone"><span class="ico">▯</span>Phone</button>
+  <button class="action" data-panel="Pause"><span class="ico">Ⅱ</span>Pause</button>
+ </div>
+ <button class="fullscreen" id="fullscreen" aria-label="Fullscreen">⛶</button>
+ <div class="joy-base" id="joyBase"><div class="joy-thumb" id="joyThumb"><div class="joy-center"></div></div></div>
+ <div class="right-controls"><button class="round-btn" id="run"><span class="ico">🏃</span>Run</button><button class="round-btn" id="jump"><span class="ico">🦘</span>Jump</button></div>
+ <div class="toast" id="toast"></div>
+</div>
+<script>
+const base=document.getElementById('joyBase'),thumb=document.getElementById('joyThumb');let active=false,pid=null;
+function moveJoy(e){const r=base.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy;const max=r.width*.27,d=Math.hypot(dx,dy);if(d>max){dx=dx/d*max;dy=dy/d*max}thumb.style.transform='translate('+dx+'px,'+dy+'px)';}
+function resetJoy(){active=false;pid=null;thumb.style.transition='transform .16s ease-out';thumb.style.transform='translate(0,0)';setTimeout(()=>thumb.style.transition='',170)}
+thumb.addEventListener('pointerdown',e=>{active=true;pid=e.pointerId;thumb.setPointerCapture(pid);thumb.style.transition='';moveJoy(e);e.preventDefault()});
+thumb.addEventListener('pointermove',e=>{if(active&&e.pointerId===pid)moveJoy(e)});
+thumb.addEventListener('pointerup',e=>{if(e.pointerId===pid)resetJoy()});thumb.addEventListener('pointercancel',resetJoy);
+base.addEventListener('pointerdown',e=>{if(e.target===thumb)return;active=true;pid=e.pointerId;base.setPointerCapture(pid);thumb.style.transition='';moveJoy(e)});
+base.addEventListener('pointermove',e=>{if(active&&e.pointerId===pid)moveJoy(e)});base.addEventListener('pointerup',e=>{if(e.pointerId===pid)resetJoy()});base.addEventListener('pointercancel',resetJoy);
+let coins=500;document.getElementById('addCoins').onclick=()=>{coins+=100;document.getElementById('coins').textContent=coins;show(' +100 coins')};
+function show(s){const t=document.getElementById('toast');t.textContent=s;t.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display='none',1300)}
+document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>show(b.dataset.panel));
+document.getElementById('run').onclick=()=>show('Run');document.getElementById('jump').onclick=()=>show('Jump');
+document.getElementById('fullscreen').onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()};
+</script>
+</body></html>
