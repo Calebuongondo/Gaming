@@ -30,7 +30,17 @@ button{font:inherit;color:#f7f8fa;cursor:pointer;touch-action:manipulation}
 .joy-thumb:active{cursor:grabbing}.joy-center{width:42%;height:42%;border-radius:50%;background:conic-gradient(from 20deg,#9ea5ad,#5c646e,#aab1b9,#626a74,#9ea5ad);box-shadow:inset 0 2px 4px #3338;border:1px solid #747c86}
 .toast{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#3f4650dd;padding:14px 22px;border-radius:12px;border:1px solid #ffffff55;display:none;font-size:18px;box-shadow:0 8px 25px #2225}
 @media(max-width:600px){.top-left{gap:8px;top:8px;left:8px}.top-actions{top:8px;right:8px;gap:4px}.action{border-radius:16px}.fullscreen{right:8px}.right-controls{right:8px;bottom:10px;gap:10px}.joy-base{left:18px;bottom:20px}.money{min-width:125px}.top-actions .action{width:clamp(48px,12vw,65px);height:58px}.top-actions .ico{font-size:23px}.top-actions .action{font-size:10px}}
-</style>
+/* Landscape-only gameplay + scalable HUD */
+#world{position:absolute;inset:0;z-index:0}#world canvas{display:block;width:100%;height:100%}.hud{z-index:1}
+@media (orientation:portrait){body{background:#171b22!important}#world,.hud{display:none!important}body:after{content:"↻  Rotate your device to landscape to play";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:28px;color:#f5f7fb;font-size:clamp(20px,5vw,32px);font-weight:700;background:radial-gradient(circle,#343b46,#171b22)}}
+@media (orientation:landscape){
+.minimap{width:clamp(76px,13vh,135px)}.top-left{top:clamp(7px,1.5vh,18px);left:clamp(7px,1.5vw,18px);gap:clamp(8px,2vw,22px)}
+.money{height:clamp(44px,10vh,72px);min-width:clamp(145px,24vw,245px);padding:5px 8px}.coin{width:clamp(35px,7vh,60px)}.plus{width:clamp(38px,7vh,58px)}
+.top-actions{top:clamp(7px,1.5vh,18px);right:clamp(7px,1.5vw,18px);gap:clamp(4px,.8vw,12px)}.action{width:clamp(52px,10vh,92px);height:clamp(56px,13vh,95px);border-radius:clamp(13px,2.5vh,24px);font-size:clamp(11px,2.1vh,18px)}.action .ico{font-size:clamp(22px,5vh,40px)}
+.fullscreen{top:clamp(72px,15vh,112px);right:clamp(7px,1.5vw,18px);width:clamp(52px,10vh,88px);height:clamp(52px,10vh,88px);border-radius:clamp(15px,3vh,25px)}
+.joy-base{left:clamp(18px,5vw,70px);bottom:clamp(14px,3vh,32px);width:clamp(95px,20vh,155px);height:clamp(95px,20vh,155px)}
+.right-controls{right:clamp(8px,1.5vw,18px);bottom:clamp(8px,1.5vh,18px);gap:clamp(8px,2vh,15px)}.round-btn{width:clamp(70px,15vh,112px);height:clamp(70px,15vh,112px);font-size:clamp(13px,2.5vh,21px)}.round-btn .ico{font-size:clamp(28px,6vh,48px)}
+}</style>
 </head>
 <body>
 <div id="world"></div>
