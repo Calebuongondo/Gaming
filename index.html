@@ -31,12 +31,12 @@ button{font:inherit;color:#f7f8fa;cursor:pointer;touch-action:manipulation}
 .toast{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#3f4650dd;padding:14px 22px;border-radius:12px;border:1px solid #ffffff55;display:none;font-size:18px;box-shadow:0 8px 25px #2225}
 @media(max-width:600px){.top-left{gap:8px;top:8px;left:8px}.top-actions{top:8px;right:8px;gap:4px}.action{border-radius:16px}.fullscreen{right:8px}.right-controls{right:8px;bottom:10px;gap:10px}.joy-base{left:18px;bottom:20px}.money{min-width:125px}.top-actions .action{width:clamp(48px,12vw,65px);height:58px}.top-actions .ico{font-size:23px}.top-actions .action{font-size:10px}}
 /* Landscape-only gameplay + scalable HUD */
-#world{position:absolute;inset:0;z-index:0}#world canvas{display:block;width:100%;height:100%}.hud{z-index:1}
+#world{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;background:#78b8e8;overflow:hidden}#world canvas{position:absolute!important;left:0!important;top:0!important;display:block;width:100vw!important;height:100vh!important}.hud{z-index:1}
 @media (orientation:portrait){body{background:#171b22!important}#world,.hud{display:none!important}body:after{content:"↻  Rotate your device to landscape to play";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:28px;color:#f5f7fb;font-size:clamp(20px,5vw,32px);font-weight:700;background:radial-gradient(circle,#343b46,#171b22)}}
 @media (orientation:landscape){
 .minimap{width:clamp(58px,10vh,105px)}.top-left{top:clamp(7px,1.5vh,18px);left:clamp(7px,1.5vw,18px);gap:clamp(8px,2vw,22px)}
-.money{height:clamp(44px,10vh,72px);min-width:clamp(145px,24vw,245px);padding:5px 8px}.coin{width:clamp(35px,7vh,60px)}.plus{width:clamp(38px,7vh,58px)}
-.top-actions{top:clamp(7px,1.5vh,18px);right:clamp(7px,1.5vw,18px);gap:clamp(4px,.8vw,12px)}.action{width:clamp(42px,8vh,70px);height:clamp(44px,10vh,72px);border-radius:clamp(13px,2.5vh,24px);font-size:clamp(11px,2.1vh,18px)}.action .ico{font-size:clamp(22px,5vh,40px)}
+.money{height:clamp(44px,10vh,72px);min-width:clamp(120px,19vw,190px);padding:5px 8px}.coin{width:clamp(35px,7vh,60px)}.plus{width:clamp(38px,7vh,58px)}
+.top-actions{top:clamp(7px,1.5vh,18px);right:clamp(7px,1.5vw,18px);gap:clamp(4px,.8vw,12px)}.action{width:clamp(42px,8vh,70px);height:clamp(44px,10vh,72px);border-radius:clamp(13px,2.5vh,24px);font-size:clamp(9px,1.65vh,14px)}.action .ico{font-size:clamp(19px,3.8vh,30px)}
 .fullscreen{top:clamp(72px,15vh,112px);right:clamp(7px,1.5vw,18px);width:clamp(52px,10vh,88px);height:clamp(42px,8vh,70px);border-radius:clamp(15px,3vh,25px)}
 .joy-base{left:clamp(18px,5vw,70px);bottom:clamp(14px,3vh,32px);width:clamp(75px,15vh,115px);height:clamp(75px,15vh,115px)}
 .right-controls{right:clamp(8px,1.5vw,18px);bottom:clamp(8px,1.5vh,18px);gap:clamp(8px,2vh,15px)}.round-btn{width:clamp(58px,12vh,88px);height:clamp(58px,12vh,88px);font-size:clamp(13px,2.5vh,21px)}.round-btn .ico{font-size:clamp(28px,6vh,48px)}
@@ -54,7 +54,7 @@ button{font:inherit;color:#f7f8fa;cursor:pointer;touch-action:manipulation}
   <button class="action" data-panel="Shop"><span class="ico">🛒</span>Shop</button>
   <button class="action" data-panel="Inventory"><span class="ico">▦</span>Inventory</button>
   <button class="action" data-panel="Settings"><span class="ico">⚙</span>Settings</button>
-  <button class="action" data-panel="Phone"><span class="ico">▯</span>Phone</button>
+  <button class="action" data-panel="Phone"><span class="ico">📱</span>Phone</button>
   <button class="action" data-panel="Pause"><span class="ico">Ⅱ</span>Pause</button>
  </div>
  <button class="fullscreen" id="fullscreen" aria-label="Fullscreen">⛶</button>
@@ -83,7 +83,7 @@ document.getElementById('fullscreen').onclick=()=>{if(!document.fullscreenElemen
 (()=> {
  const scene=new THREE.Scene(); scene.background=new THREE.Color(0x87b9e8); scene.fog=new THREE.Fog(0x87b9e8,35,110);
  const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,120);camera.position.set(0,3.8,7);
- const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputEncoding=THREE.sRGBEncoding;document.getElementById('world').appendChild(renderer.domElement);
+ const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(document.getElementById('world').clientWidth,document.getElementById('world').clientHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputEncoding=THREE.sRGBEncoding;document.getElementById('world').appendChild(renderer.domElement);
  scene.add(new THREE.HemisphereLight(0xffffff,0x69717c,1.6));const sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(-5,10,6);sun.castShadow=true;scene.add(sun);
  const floor=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.MeshStandardMaterial({color:0x477b3d,roughness:.95}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
  // Subtle ground grid
@@ -122,7 +122,7 @@ document.getElementById('fullscreen').onclick=()=>{if(!document.fullscreenElemen
  character.userData.vy=(character.userData.vy||0)-12*dt;character.position.y+=character.userData.vy*dt;if(character.position.y<0){character.position.y=0;character.userData.vy=0}
  camera.position.x+=(character.position.x-camera.position.x)*.06;camera.position.z+=(character.position.z+7-camera.position.z)*.06;camera.lookAt(character.position.x,1,character.position.z);
  renderer.render(scene,camera)}
- requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+ requestAnimationFrame(animate);addEventListener('resize',()=>{const w=document.getElementById('world').clientWidth,h=document.getElementById('world').clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)});
 })();
 </script>
 </body></html>
