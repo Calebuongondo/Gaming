@@ -13,15 +13,15 @@ button:active{background:#c4a34b;color:#111}
 
 @media(orientation:portrait){#rotate{display:flex}#hud{display:none}}
 
-#money{position:absolute;top:3%;left:13%;height:58px;min-width:190px;border-radius:32px;background:linear-gradient(145deg,#aab1b9,#515963);border:2px solid #c4cbd2;display:flex;align-items:center;gap:12px;font-size:22px;box-shadow:0 3px 8px #0005}
-#money button{width:44px;height:44px;font-size:28px;padding:0}
+#money{position:absolute;top:3%;left:13%;height:44px;min-width:145px;border-radius:24px;background:linear-gradient(145deg,#aab1b9,#515963);border:2px solid #c4cbd2;display:flex;align-items:center;gap:8px;font-size:17px;box-shadow:0 3px 8px #0005}
+#money button{width:32px;height:32px;font-size:20px;padding:0}
 #menu{position:absolute;top:3%;right:2%;display:flex;gap:7px;pointer-events:auto}
-#menu button{width:68px;height:68px;border-radius:18px;font-size:25px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
-small{font-size:13px;font-weight:500}
-#fullscreen{pointer-events:auto;position:absolute;right:2%;top:18%;width:68px;height:68px;border-radius:18px;font-size:32px}
+#menu button{width:54px;height:54px;border-radius:13px;font-size:19px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+small{font-size:10px;font-weight:500}
+#fullscreen{pointer-events:auto;position:absolute;right:2%;top:16%;width:52px;height:52px;border-radius:13px;font-size:24px}
 #actions button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
 #popup{pointer-events:auto;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);min-width:220px;text-align:center;font-size:18px}
-@media(max-height:430px){#menu button{width:60px;height:60px}#fullscreen{top:20%;width:58px;height:58px}#actions button{width:68px;height:68px}}
+@media(max-height:430px){#menu button{width:48px;height:48px}#fullscreen{top:16%;width:48px;height:48px}#actions button{width:60px;height:60px}}
 </style></head><body>
 <div id="rotate">📱<br><br>Please rotate your phone to landscape to play.</div>
 <div id="hud">
@@ -42,8 +42,14 @@ const ground=new THREE.Mesh(new THREE.PlaneGeometry(500,500),mat(0x777b76));grou
 const roadMat=mat(0x30383b),pave=mat(0xb6b3a7),stone=mat(0x888982);
 for(let i=-180;i<=180;i+=36){let r=new THREE.Mesh(new THREE.BoxGeometry(12,.08,360),roadMat);r.position.set(i,.01,0);scene.add(r);let q=new THREE.Mesh(new THREE.BoxGeometry(360,.08,12),roadMat);q.position.set(0,.01,i);scene.add(q)}
 // Cobblestone side streets and sidewalks as textured-looking paving tiles
-const tileGeo=new THREE.BoxGeometry(1.8,.12,1.8);
-for(let x=-170;x<170;x+=2)for(let z=-170;z<170;z+=2){if(Math.abs((x+180)%36-18)<7||Math.abs((z+180)%36-18)<7)continue;let t=new THREE.Mesh(tileGeo,stone);t.position.set(x,.03,z);scene.add(t)}
+// Instanced cabro paving: thousands of stones in ONE draw call (mobile-friendly)
+const tileGeo=new THREE.BoxGeometry(1.88,.13,1.88);
+const cabroMat=new THREE.MeshStandardMaterial({color:0x9b9b96,roughness:1});
+const cabros=new THREE.InstancedMesh(tileGeo,cabroMat,29000);cabros.frustumCulled=true;
+const dummy=new THREE.Object3D();let n=0;
+for(let x=-170;x<170;x+=2)for(let z=-170;z<170;z+=2){if(Math.abs((x+180)%36-18)<7||Math.abs((z+180)%36-18)<7)continue;
+dummy.position.set(x,.015,z);dummy.rotation.set(0,0,0);dummy.updateMatrix();cabros.setMatrixAt(n,dummy.matrix);cabros.setColorAt(n,new THREE.Color().setHSL(.16,.025,.53+Math.random()*.12));n++}
+cabros.count=n;cabros.instanceMatrix.needsUpdate=true;if(cabros.instanceColor)cabros.instanceColor.needsUpdate=true;scene.add(cabros);
 // District blocks: varied apartment/office forms, courtyards and trees
 const colors=[0xc5b7a2,0x9da9ad,0xd4c9b5,0x777f85,0xb3a18d,0xe0d8c8];
 for(let bx=-5;bx<=5;bx++)for(let bz=-5;bz<=5;bz++){if(Math.abs(bx)<1&&Math.abs(bz)<1)continue;const centerX=bx*36+18,centerZ=bz*36+18;for(let k=0;k<3;k++){let x=centerX+(k-1)*9,z=centerZ+(Math.random()-.5)*16,w=7+Math.random()*4,d=8+Math.random()*6,h=8+Math.random()*35;if(Math.random()<.2)h=45+Math.random()*45;let b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(colors[Math.floor(Math.random()*colors.length)]));b.position.set(x,h/2,z);scene.add(b);let roof=new THREE.Mesh(new THREE.BoxGeometry(w+.2,.3,d+.2),mat(0x555b60));roof.position.set(x,h+.15,z);scene.add(roof);
